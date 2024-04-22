@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AiOutlineFullscreen, AiOutlineFullscreenExit, AiOutlineSetting } from "react-icons/ai";
 import { ISettings } from "../Playground";
 import SettingsModal from "@/components/Modals/SettingsModal";
+import LanguageModal from "@/components/Modals/LanguageModal";
 
 type PreferenceNavProps = {
 	settings: ISettings;
@@ -37,20 +38,34 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({ setSettings, settings }) 
 		}
 	}, [isFullScreen]);
 
+	const handleModalOpen = (modalType: string) => {
+		if (modalType === "settings") {
+			setSettings({ ...settings, settingsModalIsOpen: true });
+		} else if (modalType === "language") {
+			setSettings({ ...settings, languageModalIsOpen: true });
+		}
+	};
+
 	return (
-		<div className='flex items-center justify-between bg-dark-layer-2 h-11 w-full '>
-			<div className='flex items-center text-white'>
-				<button className='flex cursor-pointer items-center rounded focus:outline-none bg-dark-fill-3 text-dark-label-2 hover:bg-dark-fill-2  px-2 py-1.5 font-medium'>
-					<div className='flex items-center px-1'>
-						<div className='text-xs text-label-2 dark:text-dark-label-2'>JavaScript</div>
+		<div className='flex items-center justify-between bg-dark-layer-2 h-11 w-full'>
+			<div className="relative">
+				<button
+					className='preferenceBtn group'
+					onClick={() => handleModalOpen("language")}
+				>
+					<div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
+						{/* Render the language name dynamically */}
+						{settings.language}
 					</div>
 				</button>
+				{/* Render LanguageModal if languageModalIsOpen is true */}
+				{settings.languageModalIsOpen && <LanguageModal settings={settings} setSettings={setSettings} />}
 			</div>
 
 			<div className='flex items-center m-2'>
 				<button
 					className='preferenceBtn group'
-					onClick={() => setSettings({ ...settings, settingsModalIsOpen: true })}
+					onClick={() => handleModalOpen("settings")}
 				>
 					<div className='h-4 w-4 text-dark-gray-6 font-bold text-lg'>
 						<AiOutlineSetting />
@@ -65,8 +80,10 @@ const PreferenceNav: React.FC<PreferenceNavProps> = ({ setSettings, settings }) 
 					<div className='preferenceBtn-tooltip'>Full Screen</div>
 				</button>
 			</div>
+			{/* Render SettingsModal if settingsModalIsOpen is true */}
 			{settings.settingsModalIsOpen && <SettingsModal settings={settings} setSettings={setSettings} />}
 		</div>
 	);
 };
+
 export default PreferenceNav;

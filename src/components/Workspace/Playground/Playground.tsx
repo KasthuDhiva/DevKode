@@ -3,8 +3,13 @@ import PreferenceNav from "./PreferenceNav/PreferenceNav";
 import Split from "react-split";
 import CodeMirror from "@uiw/react-codemirror";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { javascript } from "@codemirror/lang-javascript";
 import EditorFooter from "./EditorFooter";
+
+import { javascript } from "@codemirror/lang-javascript";
+import { cpp } from "@codemirror/lang-cpp";
+import { python } from "@codemirror/lang-python";
+import { java } from "@codemirror/lang-java";
+
 import { Problem } from "@/utils/types/problem";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, firestore } from "@/firebase/firebase";
@@ -15,35 +20,43 @@ import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 type PlaygroundProps = {
-	problem: Problem;
-	setSuccess: React.Dispatch<React.SetStateAction<boolean>>;
-	setSolved: React.Dispatch<React.SetStateAction<boolean>>;
+    problem: Problem;
+    setSuccess: React.Dispatch<React.SetStateAction<boolean>>;
+    setSolved: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export interface ISettings {
-	fontSize: string;
-	settingsModalIsOpen: boolean;
-	dropdownIsOpen: boolean;
+    fontSize: string;
+    settingsModalIsOpen: boolean;
+    dropdownIsOpen: boolean;
+    languageModalIsOpen: boolean;
+    language: string;
 }
 
 const Playground: React.FC<PlaygroundProps> = ({ problem, setSuccess, setSolved }) => {
-	const [activeTestCaseId, setActiveTestCaseId] = useState<number>(0);
-	let [userCode, setUserCode] = useState<string>(problem.starterCode);
+    const [activeTestCaseId, setActiveTestCaseId] = useState<number>(0);
+    let [userCode, setUserCode] = useState<string>(problem.starterCode);
 
-	const [fontSize, setFontSize] = useLocalStorage("lcc-fontSize", "16px");
+    const [fontSize, setFontSize] = useLocalStorage("lcc-fontSize", "16px");
 
-	const [settings, setSettings] = useState<ISettings>({
-		fontSize: fontSize,
-		settingsModalIsOpen: false,
-		dropdownIsOpen: false,
-	});
+    const [settings, setSettings] = useState<ISettings>({
+        fontSize: fontSize,
+        settingsModalIsOpen: false,
+        dropdownIsOpen: false,
+        languageModalIsOpen: false,
+        language: "JavaScript", // Default language
+    });
 
-	const [user] = useAuthState(auth);
-	const {
-		query: { pid },
-	} = useRouter();
+    const [user] = useAuthState(auth);
+    const {
+        query: { pid },
+    } = useRouter();
 
-	const handleSubmit = async () => {
+	const handleLanguageChange = (language: string) => {
+		setSettings({ ...settings, language }); // Update the language in settings state
+	};
+
+    const handleSubmit = async () => {
 		if (!user) {
 			toast.error("Please login to submit your code", {
 				position: "top-center",
@@ -121,7 +134,7 @@ const Playground: React.FC<PlaygroundProps> = ({ problem, setSuccess, setSolved 
 						value={userCode}
 						theme={vscodeDark}
 						onChange={onChange}
-						extensions={[javascript()]}
+						extensions={[getCodeMirrorLanguage(settings.language)]}
 						style={{ fontSize: settings.fontSize }}
 					/>
 				</div>
@@ -171,3 +184,20 @@ const Playground: React.FC<PlaygroundProps> = ({ problem, setSuccess, setSolved 
 	);
 };
 export default Playground;
+
+
+const getCodeMirrorLanguage = (language: string) => {
+    switch (language) {
+        case "JavaScript":
+            return javascript();
+		case "C++":
+            return cpp();
+		case "Python":
+            return python();
+		case "Java":
+            return java();
+        // Add cases for other languages if needed
+        default:
+            return javascript(); // Default to JavaScript
+    }
+};
