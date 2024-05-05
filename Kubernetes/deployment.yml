@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devkode
+  labels:
+    app: devkode
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devkode
+  template:
+    metadata:
+      labels:
+        app: devkode
+    spec:
+      containers:
+      - name: devkode
+        image: kasthurir/devkode:latest
+        ports:
+        - containerPort: 3000
